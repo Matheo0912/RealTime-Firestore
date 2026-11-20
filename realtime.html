@@ -1,0 +1,152 @@
+//Selve koden Virker ikke på grunn av noe firebase relatert, men resten av koden er helt riktig. kanksje fiks hadde hvert å lagd nytt prosjekt(mest sannsynelig nedde server loasjon), men ,å fortsatt bli ferdig med de andre to oppgavene...//
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        label {
+            display: inline-block;
+            width: 80px
+        }
+
+        input,
+        select {
+            width: 120px
+        }
+    </style>
+</head>
+
+<body>
+    
+    <label>Name</label> <input id="Namebox" type="text"> <br> <br>
+    <label>RollNo</label> <input id="Rollbox" type="text"><br> <br>
+    <label>Section</label> <input id="secbox" type="text"><br> <br>
+    <label>Gender</label>
+    <select name="Gender" id="Genbox">
+        <option value="Male">Male</option>
+        <option value="Female">Female</option>
+    </select>
+
+    <hr>
+    <button id="insbtn">INSERT</button>
+    <button id="Selbtn">SELECT</button>
+    <button id="Updbtn">UPDATE</button>
+    <button id="Delbtn">DELETE</button>
+
+    <!------------------IMPORTS + CONFIGURATION---------------------------->
+
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/13.4.0/firebase-app.js";
+
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyDyMJ7vybMHU42HQgR25NuUyvjog70rW08",
+            authDomain: "realtime-f6979.firebaseapp.com",
+            databaseUrl:"https://realtime-f6979-default-rtdb.europe-west1.firebasedatabase.app/",
+            projectId: "realtime-f6979",
+            storageBucket: "realtime-f6979.firebasestorage.app",
+            messagingSenderId: "818800293701",
+            appId: "1:818800293701:web:858f7e5df8c239c2db702c"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+
+        import { getDatabase, ref, set, get, child, update, remove }
+            from "https://www.gstatic.com/firebasejs/13.4.0/firebase-database.js";
+
+        const db = getDatabase(app);
+
+        //-----------------------REFERENCES------------------------
+
+        var namebox = document.getElementById("Namebox")
+        var rollbox = document.getElementById("Rollbox")
+        var secbox = document.getElementById("secbox")
+        var genbox = document.getElementById("Genbox")
+
+        var insBtn = document.getElementById("insbtn")
+        var selBtn = document.getElementById("Selbtn")
+        var updBtn = document.getElementById("Updbtn")
+        var delBtn = document.getElementById("Delbtn")
+
+        function InsertData() {
+            set(ref(db, "TheStudents/" + rollbox.value), {
+                NameOfStd: namebox.value,
+                RollNo: rollbox.value,
+                Section: secbox.value,
+                Gender: genbox.value
+            })
+                .then(() => {
+                    alert("data stored successfully");
+                })
+                .catch((error) => {
+                    alert("unsuccessful, error" + error)
+                })
+        }
+
+        //-----------------------SELECT DATA FUNCTION
+
+        function SelectData() {
+            const dbref = ref(db);
+
+            get(child(dbref, "TheStudents/" + rollbox.value)).then((snapshot)=>{
+                if(snapshot.exists()){
+                    namebox.value = snapshot.val().NameOfStd;
+                    secbox.value = snapshot.val().Section;
+                    genbox.value = snapshot.val().Gender;
+                }
+
+                else{
+                    alert("No data found")
+                }
+            })
+            .catch((error)=>{
+                alert("unsuccessful, error" + error)
+            });
+        }
+
+        //-----------------------UPDATE DATA FUNCTIONS
+
+        function UpdateData(){
+            update(ref(db, "TheStudents/" + rollbox.value), {
+                NameOfStd: namebox.value,
+                RollNo: rollbox.value,
+                Section: secbox.value,
+                Gender: genbox.value
+            })
+                .then(() => {
+                    alert("data updated successfully");
+                })
+                .catch((error) => {
+                    alert("unsuccessful, error" + error)
+                })
+        }
+
+        //-----------------------DELETE DATA FUNCTIONS
+
+        function DeleteData(){
+            remove(ref(db, "TheStudents/" + rollbox.value))
+                .then(() => {
+                    alert("data deleted successfully");
+                })
+                .catch((error) => {
+                    alert("unsuccessful, error" + error)
+                })
+        }
+
+        //-------------------------Assign Events to btns
+        insBtn.addEventListener('click', InsertData);
+        selBtn.addEventListener('click', SelectData);
+        updBtn.addEventListener('click', UpdateData);
+        delBtn.addEventListener('click', DeleteData);
+
+    </script>
+
+</body>
+
+</html>
