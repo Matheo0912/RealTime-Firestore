@@ -1,0 +1,149 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        label { display: inline-block; width: 80px; }
+        input, select { width: 120px; }
+    </style>
+</head>
+<body>
+
+    <label for="">Name</label> <input type="text" id="Namebox"> <br><br>
+    <label for="">RollNo</label> <input type="text" id="Rollbox"><br><br>
+    <label for="">Section</label> <input type="text" id="Secbox"><br><br>
+    <label>Gender</label><br><br>
+
+    <select id="Genbox">
+        <option value="Male">Male</option>
+        <option value="Female">Female</option>
+    </select>
+
+    <hr>
+    <button id="Insbtn">INSERT</button>
+    <button id="Selbtn">SELECT</button>
+    <button id="Updbtn">UPDATE</button>
+    <button id="Delbtn">DELETE</button>
+
+    <script type="module">
+
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/13.4.0/firebase-app.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyD8F7KbkXj81BKspZ-HuLD5BeEp9Tc86c0",
+            authDomain: "fir-380be.firebaseapp.com",
+            projectId: "fir-380be",
+            storageBucket: "fir-380be.firebasestorage.app",
+            messagingSenderId: "293072745752",
+            appId: "1:293072745752:web:6296c3ae0d4d75f0509a6d"
+        };
+
+        const app = initializeApp(firebaseConfig);
+
+        import {
+            getFirestore, doc, getDoc, setDoc,
+            collection, addDoc, updateDoc, deleteDoc, deleteField
+        }
+        from "https://www.gstatic.com/firebasejs/13.4.0/firebase-firestore.js";
+
+        const db = getFirestore(app);
+
+        //-----------------------------------REFERENCES
+
+        let NameBox = document.getElementById("Namebox");
+        let Rollbox = document.getElementById("Rollbox");
+        let SecBox = document.getElementById("Secbox");
+        let GenBox = document.getElementById("Genbox");
+
+        let instBtn = document.getElementById("Insbtn");
+        let selBtn = document.getElementById("Selbtn");
+        let updBtn = document.getElementById("Updbtn");
+        let delBtn = document.getElementById("Delbtn");
+
+        //-----------ADDING DOCUMENT
+
+        async function AddDocument_CustomID() {
+            var ref = doc(db, "TheStudentsList", Rollbox.value);
+
+            await setDoc(ref, {
+                NameOfStd: NameBox.value,
+                RollNo: Rollbox.value,
+                Section: SecBox.value,
+                Gender: GenBox.value
+            })
+            .then(() => {
+                alert("data added successfully");
+            })
+            .catch((error) => {
+                alert("Unsuccessful operation, error: " + error);
+            });
+        }
+
+        //-------GETTING DOCUMENT
+
+        async function GetDocument() {
+            var ref = doc(db, "TheStudentsList", Rollbox.value);
+            const docSnap = await getDoc(ref);
+
+            if(docSnap.exists()) {
+                NameBox.value = docSnap.data().NameOfStd;
+                SecBox.value = docSnap.data().Section;
+                GenBox.value = docSnap.data().Gender;
+            }
+            else {
+                alert("No such Document");
+            }
+        }
+
+        //------------UPDATING DOCUMENT DATA
+
+        async function UpdateFieldsInADocument() {
+            var ref = doc(db, "TheStudentsList", Rollbox.value);
+
+            await updateDoc(ref, {
+                NameOfStd: NameBox.value,
+                Section: SecBox.value,
+                Gender: GenBox.value
+            })
+            .then(() => {
+                alert("data updated successfully");
+            })
+            .catch((error) => {
+                alert("Unsuccessful operation, error: " + error);
+            });
+        }
+
+        //-----------------DELETING DOCUMENT DATA
+
+        async function DeleteDocument() {
+            var ref = doc(db, "TheStudentsList", Rollbox.value);
+            const docSnap = await getDoc(ref);
+
+            if(!docSnap.exists()) {
+                alert("Document does not exist");
+                return;
+            }
+
+            await deleteDoc(ref)
+            .then(() => {
+                alert("data deleted successfully");
+            })
+            .catch((error) => {
+                alert("Unsuccessful operation, error: " + error);
+            });
+        }
+
+        //-----------------ASSIGN EVENTS TO BTNS
+
+        instBtn.addEventListener("click", AddDocument_CustomID);
+        selBtn.addEventListener("click", GetDocument);
+        updBtn.addEventListener("click", UpdateFieldsInADocument);
+        delBtn.addEventListener("click", DeleteDocument);
+
+    </script>
+
+</body>
+</html>
