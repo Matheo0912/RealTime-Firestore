@@ -1,149 +1,152 @@
+//Selve koden Virker ikke på grunn av noe firebase relatert, men resten av koden er helt riktig. kanksje fiks hadde hvert å lagd nytt prosjekt(mest sannsynelig nedde server loasjon), men ,å fortsatt bli ferdig med de andre to oppgavene...//
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
     <style>
-        label { display: inline-block; width: 80px; }
-        input, select { width: 120px; }
+        label {
+            display: inline-block;
+            width: 80px
+        }
+
+        input,
+        select {
+            width: 120px
+        }
     </style>
 </head>
+
 <body>
-
-    <label for="">Name</label> <input type="text" id="Namebox"> <br><br>
-    <label for="">RollNo</label> <input type="text" id="Rollbox"><br><br>
-    <label for="">Section</label> <input type="text" id="Secbox"><br><br>
-    <label>Gender</label><br><br>
-
-    <select id="Genbox">
+    
+    <label>Name</label> <input id="Namebox" type="text"> <br> <br>
+    <label>RollNo</label> <input id="Rollbox" type="text"><br> <br>
+    <label>Section</label> <input id="secbox" type="text"><br> <br>
+    <label>Gender</label>
+    <select name="Gender" id="Genbox">
         <option value="Male">Male</option>
         <option value="Female">Female</option>
     </select>
 
     <hr>
-    <button id="Insbtn">INSERT</button>
+    <button id="insbtn">INSERT</button>
     <button id="Selbtn">SELECT</button>
     <button id="Updbtn">UPDATE</button>
     <button id="Delbtn">DELETE</button>
 
-    <script type="module">
+    <!------------------IMPORTS + CONFIGURATION---------------------------->
 
+    <script type="module">
+        // Import the functions you need from the SDKs you need
         import { initializeApp } from "https://www.gstatic.com/firebasejs/13.4.0/firebase-app.js";
 
+        // Your web app's Firebase configuration
         const firebaseConfig = {
-            apiKey: "AIzaSyD8F7KbkXj81BKspZ-HuLD5BeEp9Tc86c0",
-            authDomain: "fir-380be.firebaseapp.com",
-            projectId: "fir-380be",
-            storageBucket: "fir-380be.firebasestorage.app",
-            messagingSenderId: "293072745752",
-            appId: "1:293072745752:web:6296c3ae0d4d75f0509a6d"
+            apiKey: "AIzaSyDyMJ7vybMHU42HQgR25NuUyvjog70rW08",
+            authDomain: "realtime-f6979.firebaseapp.com",
+            databaseUrl:"https://realtime-f6979-default-rtdb.europe-west1.firebasedatabase.app/",
+            projectId: "realtime-f6979",
+            storageBucket: "realtime-f6979.firebasestorage.app",
+            messagingSenderId: "818800293701",
+            appId: "1:818800293701:web:858f7e5df8c239c2db702c"
         };
 
+        // Initialize Firebase
         const app = initializeApp(firebaseConfig);
 
-        import {
-            getFirestore, doc, getDoc, setDoc,
-            collection, addDoc, updateDoc, deleteDoc, deleteField
+        import { getDatabase, ref, set, get, child, update, remove }
+            from "https://www.gstatic.com/firebasejs/13.4.0/firebase-database.js";
+
+        const db = getDatabase(app);
+
+        //-----------------------REFERENCES------------------------
+
+        var namebox = document.getElementById("Namebox")
+        var rollbox = document.getElementById("Rollbox")
+        var secbox = document.getElementById("secbox")
+        var genbox = document.getElementById("Genbox")
+
+        var insBtn = document.getElementById("insbtn")
+        var selBtn = document.getElementById("Selbtn")
+        var updBtn = document.getElementById("Updbtn")
+        var delBtn = document.getElementById("Delbtn")
+
+        function InsertData() {
+            set(ref(db, "TheStudents/" + rollbox.value), {
+                NameOfStd: namebox.value,
+                RollNo: rollbox.value,
+                Section: secbox.value,
+                Gender: genbox.value
+            })
+                .then(() => {
+                    alert("data stored successfully");
+                })
+                .catch((error) => {
+                    alert("unsuccessful, error" + error)
+                })
         }
-        from "https://www.gstatic.com/firebasejs/13.4.0/firebase-firestore.js";
 
-        const db = getFirestore(app);
+        //-----------------------SELECT DATA FUNCTION
 
-        //-----------------------------------REFERENCES
+        function SelectData() {
+            const dbref = ref(db);
 
-        let NameBox = document.getElementById("Namebox");
-        let Rollbox = document.getElementById("Rollbox");
-        let SecBox = document.getElementById("Secbox");
-        let GenBox = document.getElementById("Genbox");
+            get(child(dbref, "TheStudents/" + rollbox.value)).then((snapshot)=>{
+                if(snapshot.exists()){
+                    namebox.value = snapshot.val().NameOfStd;
+                    secbox.value = snapshot.val().Section;
+                    genbox.value = snapshot.val().Gender;
+                }
 
-        let instBtn = document.getElementById("Insbtn");
-        let selBtn = document.getElementById("Selbtn");
-        let updBtn = document.getElementById("Updbtn");
-        let delBtn = document.getElementById("Delbtn");
-
-        //-----------ADDING DOCUMENT
-
-        async function AddDocument_CustomID() {
-            var ref = doc(db, "TheStudentsList", Rollbox.value);
-
-            await setDoc(ref, {
-                NameOfStd: NameBox.value,
-                RollNo: Rollbox.value,
-                Section: SecBox.value,
-                Gender: GenBox.value
+                else{
+                    alert("No data found")
+                }
             })
-            .then(() => {
-                alert("data added successfully");
-            })
-            .catch((error) => {
-                alert("Unsuccessful operation, error: " + error);
+            .catch((error)=>{
+                alert("unsuccessful, error" + error)
             });
         }
 
-        //-------GETTING DOCUMENT
+        //-----------------------UPDATE DATA FUNCTIONS
 
-        async function GetDocument() {
-            var ref = doc(db, "TheStudentsList", Rollbox.value);
-            const docSnap = await getDoc(ref);
-
-            if(docSnap.exists()) {
-                NameBox.value = docSnap.data().NameOfStd;
-                SecBox.value = docSnap.data().Section;
-                GenBox.value = docSnap.data().Gender;
-            }
-            else {
-                alert("No such Document");
-            }
+        function UpdateData(){
+            update(ref(db, "TheStudents/" + rollbox.value), {
+                NameOfStd: namebox.value,
+                RollNo: rollbox.value,
+                Section: secbox.value,
+                Gender: genbox.value
+            })
+                .then(() => {
+                    alert("data updated successfully");
+                })
+                .catch((error) => {
+                    alert("unsuccessful, error" + error)
+                })
         }
 
-        //------------UPDATING DOCUMENT DATA
+        //-----------------------DELETE DATA FUNCTIONS
 
-        async function UpdateFieldsInADocument() {
-            var ref = doc(db, "TheStudentsList", Rollbox.value);
-
-            await updateDoc(ref, {
-                NameOfStd: NameBox.value,
-                Section: SecBox.value,
-                Gender: GenBox.value
-            })
-            .then(() => {
-                alert("data updated successfully");
-            })
-            .catch((error) => {
-                alert("Unsuccessful operation, error: " + error);
-            });
+        function DeleteData(){
+            remove(ref(db, "TheStudents/" + rollbox.value))
+                .then(() => {
+                    alert("data deleted successfully");
+                })
+                .catch((error) => {
+                    alert("unsuccessful, error" + error)
+                })
         }
 
-        //-----------------DELETING DOCUMENT DATA
-
-        async function DeleteDocument() {
-            var ref = doc(db, "TheStudentsList", Rollbox.value);
-            const docSnap = await getDoc(ref);
-
-            if(!docSnap.exists()) {
-                alert("Document does not exist");
-                return;
-            }
-
-            await deleteDoc(ref)
-            .then(() => {
-                alert("data deleted successfully");
-            })
-            .catch((error) => {
-                alert("Unsuccessful operation, error: " + error);
-            });
-        }
-
-        //-----------------ASSIGN EVENTS TO BTNS
-
-        instBtn.addEventListener("click", AddDocument_CustomID);
-        selBtn.addEventListener("click", GetDocument);
-        updBtn.addEventListener("click", UpdateFieldsInADocument);
-        delBtn.addEventListener("click", DeleteDocument);
+        //-------------------------Assign Events to btns
+        insBtn.addEventListener('click', InsertData);
+        selBtn.addEventListener('click', SelectData);
+        updBtn.addEventListener('click', UpdateData);
+        delBtn.addEventListener('click', DeleteData);
 
     </script>
 
 </body>
+
 </html>
